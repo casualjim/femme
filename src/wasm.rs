@@ -1,16 +1,19 @@
 //! Print logs as ndjson.
 
 use js_sys::Object;
-use log::{kv, Level, LevelFilter, Log, Metadata, Record};
+use log::{kv, Level, LevelFilter, Log, Metadata, Record, SetLoggerError};
 use wasm_bindgen::prelude::*;
 
 use std::collections::HashMap;
 
 /// Start logging.
-pub(crate) fn start(level: LevelFilter) {
+pub(crate) fn try_start(level: LevelFilter) -> Result<(), SetLoggerError> {
     let logger = Box::new(Logger {});
-    log::set_boxed_logger(logger).expect("Could not start logging");
-    log::set_max_level(level);
+    let res = log::set_boxed_logger(logger);
+    if res.is_ok() {
+        log::set_max_level(level)
+    }
+    res
 }
 
 #[derive(Debug)]

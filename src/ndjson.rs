@@ -1,14 +1,17 @@
 //! Print logs as ndjson.
 
-use log::{kv, LevelFilter, Log, Metadata, Record};
+use log::{kv, LevelFilter, Log, Metadata, Record, SetLoggerError};
 use std::io::{self, StdoutLock, Write};
 use std::time;
 
 /// Start logging.
-pub(crate) fn start(level: LevelFilter) {
+pub(crate) fn try_start(level: LevelFilter) -> Result<(), SetLoggerError> {
     let logger = Box::new(Logger {});
-    log::set_boxed_logger(logger).expect("Could not start logging");
-    log::set_max_level(level);
+    let res = log::set_boxed_logger(logger);
+    if res.is_ok() {
+        log::set_max_level(level)
+    }
+    res
 }
 
 #[derive(Debug)]
@@ -23,26 +26,20 @@ impl Log for Logger {
         if self.enabled(record.metadata()) {
             let stdout = io::stdout();
             let mut handle = stdout.lock();
-            let level = get_level(record.level());
+            let level = record.level();
             let time = time::UNIX_EPOCH.elapsed().unwrap().as_millis();
-            write!(&mut handle, "{{\"level\":{},\"time\":{},\"msg\":", level, time).unwrap();
+            write!(
+                &mut handle,
+                "{{\"level\":{},\"time\":{},\"msg\":",
+                level.to_string().to_lowercase(), time
+            )
+            .unwrap();
             serde_json::to_writer(&mut handle, record.args()).unwrap();
             format_kv_pairs(&mut handle, &record);
             writeln!(&mut handle, "}}").unwrap();
         }
     }
     fn flush(&self) {}
-}
-
-fn get_level(level: log::Level) -> u8 {
-    use log::Level::*;
-    match level {
-        Trace => 10,
-        Debug => 20,
-        Info => 30,
-        Warn => 40,
-        Error => 50,
-    }
 }
 
 fn format_kv_pairs<'b>(mut out: &mut StdoutLock<'b>, record: &Record) {

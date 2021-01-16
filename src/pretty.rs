@@ -1,6 +1,6 @@
 //! Pretty print logs.
 
-use log::{kv, Level, LevelFilter, Log, Metadata, Record};
+use log::{kv, Level, LevelFilter, Log, Metadata, Record, SetLoggerError};
 use std::io::{self, StdoutLock, Write};
 
 // ANSI term codes.
@@ -9,12 +9,18 @@ const BOLD: &'static str = "\x1b[1m";
 const RED: &'static str = "\x1b[31m";
 const GREEN: &'static str = "\x1b[32m";
 const YELLOW: &'static str = "\x1b[33m";
+const BLUE: &'static str = "\x1b[34m";
+const PURPLE: &'static str = "\x1b[35m";
+const CYAN: &'static str = "\x1b[36m";
 
 /// Start logging.
-pub(crate) fn start(level: LevelFilter) {
+pub(crate) fn try_start(level: LevelFilter) -> Result<(), SetLoggerError> {
     let logger = Box::new(Logger {});
-    log::set_boxed_logger(logger).expect("Could not start logging");
-    log::set_max_level(level);
+    let res = log::set_boxed_logger(logger);
+    if res.is_ok() {
+        log::set_max_level(level)
+    }
+    res
 }
 
 #[derive(Debug)]
@@ -49,7 +55,7 @@ fn format_kv_pairs<'b>(mut out: &mut StdoutLock<'b>, record: &Record) {
             key: kv::Key<'kvs>,
             val: kv::Value<'kvs>,
         ) -> Result<(), kv::Error> {
-            write!(self.stdout, "\n    {}{}{} {}", BOLD, key, RESET, val)?;
+            write!(self.stdout, "\n    {}{}{}{} {}", CYAN, BOLD, key, RESET, val)?;
             Ok(())
         }
     }
@@ -61,9 +67,9 @@ fn format_kv_pairs<'b>(mut out: &mut StdoutLock<'b>, record: &Record) {
 fn format_src(out: &mut StdoutLock<'_>, record: &Record<'_>) {
     let msg = record.target();
     match record.level() {
-        Level::Trace | Level::Debug | Level::Info => {
-            write!(out, "{}{}{}{}", GREEN, BOLD, msg, RESET).unwrap();
-        }
+        Level::Trace => write!(out, "{}{}{}{}", PURPLE, BOLD, msg, RESET).unwrap(),
+        Level::Debug => write!(out, "{}{}{}{}", BLUE, BOLD, msg, RESET).unwrap(),
+        Level::Info => write!(out, "{}{}{}{}", GREEN, BOLD, msg, RESET).unwrap(),
         Level::Warn => write!(out, "{}{}{}{}", YELLOW, BOLD, msg, RESET).unwrap(),
         Level::Error => write!(out, "{}{}{}{}", RED, BOLD, msg, RESET).unwrap(),
     }
