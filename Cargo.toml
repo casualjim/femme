@@ -1,6 +1,6 @@
 [package]
 name = "cj-femme"
-version = "2.2.2"
+version = "2.2.3"
 license = "MIT OR Apache-2.0"
 authors = [
     "lrlna <shestak.irina@gmail.com>",
@@ -30,4 +30,4 @@ js-sys = "0.3"
 wasm-bindgen = { version = "0.2", features = ["serde-serialize"] }
 
 [dev-dependencies]
-kv-log-macro = "1.0.7"
+kv-log-macro = "1"

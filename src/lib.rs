@@ -4,7 +4,7 @@
 //!
 //! ## Examples
 //! ```
-//! femme::start();
+//! cj_femme::start();
 //! log::warn!("Unauthorized access attempt on /login");
 //! log::info!("Listening on port 8080");
 //! ```
@@ -34,7 +34,7 @@ mod wasm;
 /// # Examples
 ///
 /// ```
-/// femme::start();
+/// cj_femme::start();
 /// log::warn!("Unauthorized access attempt on /login");
 /// log::info!("Listening on port 8080");
 /// ```
@@ -48,7 +48,7 @@ pub fn start() {
 ///
 /// # Examples
 /// ```
-/// femme::with_level(log::LevelFilter::Trace);
+/// cj_femme::with_level(log::LevelFilter::Trace);
 /// ```
 pub fn with_level(level: log::LevelFilter) {
     #[cfg(target_arch = "wasm32")]
