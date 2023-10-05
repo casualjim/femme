@@ -1,5 +1,5 @@
 [package]
-name = "femme"
+name = "cj-femme"
 version = "2.2.1"
 license = "MIT OR Apache-2.0"
 authors = [
